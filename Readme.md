@@ -1,6 +1,6 @@
 # 💼 Internship Project - Blockchain based Result Storage and Verification System
 
-This repository contains the work done as part of my internship project at **IAMPro-2025**. The project focuses on **securely storing and verifying academic results using blockchain technology**.
+This repository contains the work done as part of internship project at **IAMPro-2025**. The project focuses on **securely storing and verifying academic results using blockchain technology**.
 
 ## 📌 Project Overview
 
