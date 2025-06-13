@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Student Result</title>
+  <style>
+    body {
+      font-family: "Arial", sans-serif;
+      margin: 2rem;
+    }
+    .university {
+      text-align: center;
+      font-weight: bold;
+      font-size: 1.2rem;
+    }
+    .student-info {
+      margin-top: 2rem;
+      font-size: 1rem;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1.5rem;
+    }
+    th, td {
+      border: 1px solid #333;
+      padding: 10px;
+      text-align: center;
+    }
+    th {
+      background-color: #f0f0f0;
+    }
+
+    button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  font-size: 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-top: 20px;
+}
+
+button:hover {
+  background-color: #0056b3;
+}
+
+/* Hide elements with class 'no-print' in print (PDF) */
+@media print {
+  .no-print {
+    display: none;
+  }
+}
+
+    .footer {
+      margin-top: 2rem;
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="university">
+    <h2>University Name</h2>
+    <p>PROVISIONAL RESULT SHEET</p>
+  </div>
+
+  <div class="student-info">
+    <p><strong>Student Name:</strong> <%= student.studentName %></p>
+    <p><strong>Roll Number:</strong> <%= student.rollNo %></p>
+    <p><strong>Semester:</strong> <%= student.semester %></p>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Subject Name</th>
+        <th>Marks</th>
+        <th>Result</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% student.subjects.forEach(subject => { %>
+        <tr>
+          <td><%= subject.name %></td>
+          <td><%= subject.marks %></td>
+          <td><%= subject.marks >= 40 ? 'P' : 'F' %></td>
+        </tr>
+      <% }) %>
+    </tbody>
+  </table>
+
+  <div class="footer">
+    <p><strong>Nomenclature/Abbreviations : </strong> P → PASS &nbsp;&nbsp; F → FAIL</p>
+    <p><i>Note: Results shown are provisional and subject to official confirmation.</i></p>
+  </div>
+
+  <form action="/student/<%= student._id %>/download-pdf" method="GET" class="no-print">
+  <button type="submit">Download Result</button>
+</form>
+
+
+</body>
+</html>
+
