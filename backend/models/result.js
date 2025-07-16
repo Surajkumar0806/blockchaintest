@@ -9,7 +9,9 @@ const ResultSchema = new mongoose.Schema({
       name: String,
       marks: Number
     }
-  ]
+  ],
+  pdfHash: String
+
 });
 
 module.exports = mongoose.model('Result', ResultSchema);
