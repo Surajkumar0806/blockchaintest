@@ -6,13 +6,18 @@ import ViewResult from './pages/ViewResult';
 
 function App() {
   return (
-    <Router>
+    
+      
+      <Router>
       <Routes>
         <Route path="/admin" element={<AdminPage />} />
         <Route path="/check-result" element={<CheckResult />} />
         <Route path="/result/:id" element={<ViewResult />} />
       </Routes>
     </Router>
+    
+    
+    
   );
 }
 

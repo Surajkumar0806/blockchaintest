@@ -36,17 +36,14 @@ mongoose.connect('mongodb://localhost:27017/studentResults').then(() => {
 const Result = require('./models/Result'); // Import the model
 
 app.post('/submit-result', async (req, res) => {
-
-
-
-  
   try {
-
-    //checking the data is already stored or not
+    // Normalize inputs
     const rollNo = req.body.rollNo.trim().toUpperCase();
+    const studentName = req.body.studentName.trim();
     const semester = parseInt(req.body.semester);
+    const subjects = req.body.subjects;
 
-    
+    // Step 1: Check for existing entry
     const existing = await Result.findOne({ rollNo, semester });
     if (existing) {
       return res.status(409).json({
@@ -54,18 +51,23 @@ app.post('/submit-result', async (req, res) => {
       });
     }
 
+    // Step 2: Build cleaned student data
+    const studentData = {
+      studentName,
+      rollNo,
+      semester,
+      subjects
+    };
 
-    // Step 1: Save student result data to MongoDB
-    const student = new Result(req.body);
-    // await student.save();
+    const student = new Result(studentData);
 
-    // Step 2: Render EJS to HTML
+    // Step 3: Render EJS to HTML
     const html = await ejs.renderFile(path.join(__dirname, 'views', 'result.ejs'), {
       student,
       universityName: 'Your University Name'
     });
 
-    // Step 3: Generate PDF from rendered HTML using Puppeteer
+    // Step 4: Generate PDF from rendered HTML using Puppeteer
     const browser = await puppeteer.launch();
     const page = await browser.newPage();
 
@@ -73,26 +75,30 @@ app.post('/submit-result', async (req, res) => {
     const pdfBuffer = await page.pdf({ format: 'A4', printBackground: true });
     await browser.close();
 
-    //step : 4 generate hash from pdf
+    // Step 5: Generate hash from PDF
     const pdfHash = sha256(pdfBuffer);
-
-    //add hash temporary in db
     student.pdfHash = pdfHash;
-    //saving the data in db
+
+    // Step 6: Save student + hash
     await student.save();
 
-    // Optional: Save PDF locally (or upload to S3 next)
+    // Step 7: Save PDF locally
     const filePath = path.join(__dirname, `results/result-${student._id}.pdf`);
     fs.writeFileSync(filePath, pdfBuffer);
 
-    // Respond
-    res.status(200).json({ message: 'Result saved and PDF and hash  generated successfully', studentId: student._id ,hash: pdfHash });
+    // Step 8: Respond to client
+    res.status(200).json({
+      message: 'Result saved and PDF + hash generated successfully',
+      studentId: student._id,
+      hash: pdfHash
+    });
 
   } catch (err) {
     console.error(err);
     res.status(500).send('Error generating PDF');
   }
 });
+
 
 //route to render html from mongodb
 app.get('/student/:id/result', async (req, res) => {
@@ -139,20 +145,26 @@ app.get('/student/:id/download-pdf', async (req, res) => {
 //find student route for showing result
 app.post('/find-student', async (req, res) => {
   try {
-    const { rollNo, studentName } = req.body;
+    const rollNo = req.body.rollNo.trim().toUpperCase();
+    const studentName = req.body.studentName.trim();
+
+    console.log(`Searching for: ${studentName} | ${rollNo}`);
 
     const student = await Result.findOne({
-      rollNo: rollNo.trim().toUpperCase(),
-      studentName: { $regex: new RegExp(studentName, 'i') }
+      rollNo: rollNo,
+      studentName: { $regex: new RegExp(studentName, 'i') } // case-insensitive name match
     });
 
     if (!student) {
+      console.log("❌ No student found.");
       return res.status(404).json({ message: 'Student not found' });
     }
 
+    console.log("✅ Found student:", student._id);
     res.status(200).json({ studentId: student._id });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'Server error' });
+    console.error("Error in /find-student:", err);
+    res.status(500).json({ message: 'Internal server error' });
   }
 });
+

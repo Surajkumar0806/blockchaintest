@@ -12,8 +12,8 @@ const CheckResult = () => {
     e.preventDefault();
     try {
       const res = await axios.post('http://localhost:3000/find-student', {
-        studentName,
-        rollNo
+         studentName: studentName.trim(),
+         rollNo: rollNo.trim().toUpperCase()
       });
       if (res.data.studentId) {
         navigate(`/result/${res.data.studentId}`);
