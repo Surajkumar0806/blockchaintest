@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import './AdminPage.css';
 
 const AdminPage = () => {
   const [formData, setFormData] = useState({
@@ -39,37 +40,59 @@ const AdminPage = () => {
   };
 
   return (
-    <div>
-      <h2>Admin Panel: Enter Student Result</h2>
-      <form onSubmit={handleSubmit}>
-        <input type="text" name="studentName" placeholder="Student Name" onChange={handleChange} required />
-        <input type="text" name="rollNo" placeholder="Roll Number" onChange={handleChange} required />
-        <input type="number" name="semester" placeholder="Semester" onChange={handleChange} required />
+    <div className="admin-page-wrapper">
+      <div className="admin-container">
+        <h2>Admin Panel: Enter Student Result</h2>
+        <form onSubmit={handleSubmit}>
+          <input
+            type="text"
+            name="studentName"
+            placeholder="Student Name"
+            onChange={handleChange}
+            required
+          />
+          <input
+            type="text"
+            name="rollNo"
+            placeholder="Roll Number"
+            onChange={handleChange}
+            required
+          />
+          <input
+            type="number"
+            name="semester"
+            placeholder="Semester"
+            onChange={handleChange}
+            required
+          />
 
-        <h4>Subjects</h4>
-        {formData.subjects.map((subject, index) => (
-          <div key={index}>
-            <input
-              type="text"
-              name="name"
-              placeholder="Subject Name"
-              value={subject.name}
-              onChange={(e) => handleChange(e, index)}
-              required
-            />
-            <input
-              type="number"
-              name="marks"
-              placeholder="Marks"
-              value={subject.marks}
-              onChange={(e) => handleChange(e, index)}
-              required
-            />
+          <h4>Subjects</h4>
+          <div className="subject-group">
+            {formData.subjects.map((subject, index) => (
+              <div key={index} style={{ flex: '1 1 45%' }}>
+                <input
+                  type="text"
+                  name="name"
+                  placeholder="Subject Name"
+                  value={subject.name}
+                  onChange={(e) => handleChange(e, index)}
+                  required
+                />
+                <input
+                  type="number"
+                  name="marks"
+                  placeholder="Marks"
+                  value={subject.marks}
+                  onChange={(e) => handleChange(e, index)}
+                  required
+                />
+              </div>
+            ))}
           </div>
-        ))}
-        <button type="button" onClick={addSubject}>+ Add Subject</button><br /><br />
-        <button type="submit">Submit Result</button>
-      </form>
+          <button type="button" onClick={addSubject}>+ Add Subject</button><br /><br />
+          <button type="submit">Submit Result</button>
+        </form>
+      </div>
     </div>
   );
 };

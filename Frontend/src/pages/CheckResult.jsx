@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import './CheckResult.css';
 
 const CheckResult = () => {
   const [rollNo, setRollNo] = useState('');
@@ -12,8 +13,8 @@ const CheckResult = () => {
     e.preventDefault();
     try {
       const res = await axios.post('http://localhost:3000/find-student', {
-         studentName: studentName.trim(),
-         rollNo: rollNo.trim().toUpperCase()
+        studentName: studentName.trim(),
+        rollNo: rollNo.trim().toUpperCase(),
       });
       if (res.data.studentId) {
         navigate(`/result/${res.data.studentId}`);
@@ -26,14 +27,26 @@ const CheckResult = () => {
   };
 
   return (
-    <div>
-      <h2>Check Your Result</h2>
-      <form onSubmit={handleSubmit}>
-        <input type="text" placeholder="Name" onChange={(e) => setStudentName(e.target.value)} required />
-        <input type="text" placeholder="Roll Number" onChange={(e) => setRollNo(e.target.value)} required />
-        <button type="submit">Search Result</button>
-      </form>
-      {error && <p style={{ color: 'red' }}>{error}</p>}
+    <div className="checkresult-background">
+      <div className="checkresult-container">
+        <h2 className="checkresult-heading">Check Your Result</h2>
+        <form onSubmit={handleSubmit} className="checkresult-form">
+          <input
+            type="text"
+            placeholder="Name"
+            onChange={(e) => setStudentName(e.target.value)}
+            required
+          />
+          <input
+            type="text"
+            placeholder="Roll Number"
+            onChange={(e) => setRollNo(e.target.value)}
+            required
+          />
+          <button type="submit">Search Result</button>
+        </form>
+        {error && <p className="checkresult-error">{error}</p>}
+      </div>
     </div>
   );
 };

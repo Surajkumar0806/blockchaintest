@@ -6,44 +6,36 @@ const ejs = require('ejs');
 const path = require('path');
 const fs = require('fs');
 const sha256 = require('js-sha256');
-
-//cors setup
 const cors = require('cors');
+
+// Middleware setup
 app.use(cors());
-
-
-
-
-app.listen(3000,()=>{
-  console.log('app is listening at port 3000');
-})
-
-//EJS setup
-app.set('view engine', 'ejs');
-app.set('views', './views'); // Folder to hold your EJS files
-
-
-// Middleware to parse JSON
 app.use(express.json());
 
-// MongoDB connection (replace with your MongoDB Atlas URI if using Atlas)
-mongoose.connect('mongodb://localhost:27017/studentResults').then(() => {
-  console.log('✅ Connected to MongoDB');
-}).catch(err => {
-  console.error('❌ MongoDB connection error:', err);
-});
+// EJS setup
+app.set('view engine', 'ejs');
+app.set('views', './views');
 
-const Result = require('./models/Result'); // Import the model
+// MongoDB connection
+mongoose.connect('mongodb://localhost:27017/studentResults')
+  .then(() => {
+    console.log('✅ Connected to MongoDB');
+  })
+  .catch(err => {
+    console.error('❌ MongoDB connection error:', err);
+  });
 
+// Model import
+const Result = require('./models/Result');
+
+// Submit result and generate PDF
 app.post('/submit-result', async (req, res) => {
   try {
-    // Normalize inputs
     const rollNo = req.body.rollNo.trim().toUpperCase();
     const studentName = req.body.studentName.trim();
     const semester = parseInt(req.body.semester);
     const subjects = req.body.subjects;
 
-    // Step 1: Check for existing entry
     const existing = await Result.findOne({ rollNo, semester });
     if (existing) {
       return res.status(409).json({
@@ -51,23 +43,15 @@ app.post('/submit-result', async (req, res) => {
       });
     }
 
-    // Step 2: Build cleaned student data
-    const studentData = {
-      studentName,
-      rollNo,
-      semester,
-      subjects
-    };
+    const student = new Result({ studentName, rollNo, semester, subjects });
 
-    const student = new Result(studentData);
-
-    // Step 3: Render EJS to HTML
+    // Render EJS to HTML
     const html = await ejs.renderFile(path.join(__dirname, 'views', 'result.ejs'), {
       student,
       universityName: 'Your University Name'
     });
 
-    // Step 4: Generate PDF from rendered HTML using Puppeteer
+    // Generate PDF
     const browser = await puppeteer.launch();
     const page = await browser.newPage();
 
@@ -75,18 +59,17 @@ app.post('/submit-result', async (req, res) => {
     const pdfBuffer = await page.pdf({ format: 'A4', printBackground: true });
     await browser.close();
 
-    // Step 5: Generate hash from PDF
+    // Generate PDF hash
     const pdfHash = sha256(pdfBuffer);
     student.pdfHash = pdfHash;
 
-    // Step 6: Save student + hash
     await student.save();
 
-    // Step 7: Save PDF locally
+    // Save PDF locally
     const filePath = path.join(__dirname, `results/result-${student._id}.pdf`);
     fs.writeFileSync(filePath, pdfBuffer);
 
-    // Step 8: Respond to client
+    // Respond to client
     res.status(200).json({
       message: 'Result saved and PDF + hash generated successfully',
       studentId: student._id,
@@ -99,27 +82,28 @@ app.post('/submit-result', async (req, res) => {
   }
 });
 
-
-//route to render html from mongodb
+// View HTML result
 app.get('/student/:id/result', async (req, res) => {
   try {
     const student = await Result.findById(req.params.id);
     if (!student) return res.status(404).send('Student not found');
 
-    res.render('result', { student }); // render result.ejs with student data
+    res.render('result', {
+      student,
+      universityName: 'Your University Name'
+    });
   } catch (err) {
     res.status(500).send('Error loading result');
   }
 });
 
-//pdf download route
+// Download PDF
 app.get('/student/:id/download-pdf', async (req, res) => {
   try {
     const browser = await puppeteer.launch();
     const page = await browser.newPage();
 
     const resultUrl = `http://localhost:3000/student/${req.params.id}/result`;
-
     await page.goto(resultUrl, { waitUntil: 'networkidle0' });
 
     const pdfBuffer = await page.pdf({
@@ -141,26 +125,21 @@ app.get('/student/:id/download-pdf', async (req, res) => {
   }
 });
 
-
-//find student route for showing result
+// Search student by name and roll number
 app.post('/find-student', async (req, res) => {
   try {
     const rollNo = req.body.rollNo.trim().toUpperCase();
     const studentName = req.body.studentName.trim();
 
-    console.log(`Searching for: ${studentName} | ${rollNo}`);
-
     const student = await Result.findOne({
-      rollNo: rollNo,
-      studentName: { $regex: new RegExp(studentName, 'i') } // case-insensitive name match
+      rollNo,
+      studentName: { $regex: new RegExp(studentName, 'i') }
     });
 
     if (!student) {
-      console.log("❌ No student found.");
       return res.status(404).json({ message: 'Student not found' });
     }
 
-    console.log("✅ Found student:", student._id);
     res.status(200).json({ studentId: student._id });
   } catch (err) {
     console.error("Error in /find-student:", err);
@@ -168,3 +147,7 @@ app.post('/find-student', async (req, res) => {
   }
 });
 
+// Start server
+app.listen(3000, () => {
+  console.log('app is listening at port 3000');
+});
