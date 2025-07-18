@@ -3,16 +3,14 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import './LoginPage.css';
 
 const LoginPage = () => {
-  // State for login fields
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-
   const navigate = useNavigate();
 
-  // Handle form submit
   const handleLogin = async (e) => {
     e.preventDefault();
 
@@ -29,14 +27,12 @@ const LoginPage = () => {
         password
       });
 
-      // Save token to localStorage
       localStorage.setItem('token', res.data.token);
 
       toast.success("Login successful 🎉");
       setTimeout(() => {
-        navigate('/admin'); // Redirect to admin portal
+        navigate('/admin');
       }, 1000);
-
     } catch (err) {
       toast.error("Invalid credentials ❌");
     } finally {
@@ -45,27 +41,28 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="login-container" style={{ maxWidth: '400px', margin: 'auto', marginTop: '100px' }}>
-      <h2>Admin Login</h2>
-      <form onSubmit={handleLogin}>
-        <input
-          type="email"
-          placeholder="Enter email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-        /><br /><br />
-        <input
-          type="password"
-          placeholder="Enter password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        /><br /><br />
-        <button type="submit" disabled={loading}>
-          {loading ? 'Logging in...' : 'Login'}
-        </button>
-      </form>
-
-      <ToastContainer position="top-center" autoClose={3000} />
+    <div className="login-page-wrapper">
+      <div className="login-container">
+        <h2>Admin Login</h2>
+        <form onSubmit={handleLogin}>
+          <input
+            type="email"
+            placeholder="Enter email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          /><br />
+          <input
+            type="password"
+            placeholder="Enter password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          /><br />
+          <button type="submit" disabled={loading}>
+            {loading ? 'Logging in...' : 'Login'}
+          </button>
+        </form>
+        <ToastContainer position="top-center" autoClose={3000} />
+      </div>
     </div>
   );
 };
