@@ -98,20 +98,20 @@ app.post('/submit-result',verifyToken, async (req, res) => {
   }
 });
 
-// // View HTML result
-// app.get('/student/:id/result', async (req, res) => {
-//   try {
-//     const student = await Result.findById(req.params.id);
-//     if (!student) return res.status(404).send('Student not found');
+// View HTML result
+app.get('/student/:id/result', async (req, res) => {
+  try {
+    const student = await Result.findById(req.params.id);
+    if (!student) return res.status(404).send('Student not found');
 
-//     res.render('result', {
-//       student,
-//       universityName: 'Your University Name'
-//     });
-//   } catch (err) {
-//     res.status(500).send('Error loading result');
-//   }
-// });
+    res.render('result', {
+      student,
+      universityName: 'Your University Name'
+    });
+  } catch (err) {
+    res.status(500).send('Error loading result');
+  }
+});
 
 // Download PDF
 app.get('/download-pdf/:id', async (req, res) => {

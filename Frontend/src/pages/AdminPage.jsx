@@ -101,9 +101,13 @@ const AdminPage = () => {
     }
 
     setIsLoading(true); // ✅ Start loading spinner
-
+    const token = localStorage.getItem("token");
     try {
-      const res = await axios.post('http://localhost:3000/submit-result', formData);
+      const res = await axios.post('http://localhost:3000/submit-result', formData,{
+    headers: {
+      Authorization: `Bearer ${token}` // ✅ Send token in header
+    }
+  });
       toast.success('Result submitted successfully!');
       console.log(res.data);
       setFormData({
@@ -114,6 +118,9 @@ const AdminPage = () => {
       });
       setErrors({});
     } catch (error) {
+
+      console.error("Error Details:", error.response?.data || error.message);
+
       if (error.response?.status === 409) {
         setErrors({ rollNo: "Result already exists for this roll number and semester" });
       } else {
