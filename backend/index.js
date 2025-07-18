@@ -8,6 +8,11 @@ const fs = require('fs');
 const sha256 = require('js-sha256');
 const cors = require('cors');
 
+//authentication
+const Admin = require('./models/Admin');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+
 // Middleware setup
 app.use(cors());
 app.use(express.json());
@@ -28,8 +33,19 @@ mongoose.connect('mongodb://localhost:27017/studentResults')
 // Model import
 const Result = require('./models/Result');
 
+const verifyToken = (req, res, next) => {
+  const token = req.headers.authorization?.split(" ")[1];
+  if (!token) return res.status(401).json({ message: 'Unauthorized' });
+
+  jwt.verify(token, 'secret_key', (err, decoded) => {
+    if (err) return res.status(403).json({ message: 'Invalid token' });
+    req.adminId = decoded.adminId;
+    next();
+  });
+};
+
 // Submit result and generate PDF
-app.post('/submit-result', async (req, res) => {
+app.post('/submit-result',verifyToken, async (req, res) => {
   try {
     const rollNo = req.body.rollNo.trim().toUpperCase();
     const studentName = req.body.studentName.trim();
@@ -82,23 +98,23 @@ app.post('/submit-result', async (req, res) => {
   }
 });
 
-// View HTML result
-app.get('/student/:id/result', async (req, res) => {
-  try {
-    const student = await Result.findById(req.params.id);
-    if (!student) return res.status(404).send('Student not found');
+// // View HTML result
+// app.get('/student/:id/result', async (req, res) => {
+//   try {
+//     const student = await Result.findById(req.params.id);
+//     if (!student) return res.status(404).send('Student not found');
 
-    res.render('result', {
-      student,
-      universityName: 'Your University Name'
-    });
-  } catch (err) {
-    res.status(500).send('Error loading result');
-  }
-});
+//     res.render('result', {
+//       student,
+//       universityName: 'Your University Name'
+//     });
+//   } catch (err) {
+//     res.status(500).send('Error loading result');
+//   }
+// });
 
 // Download PDF
-app.get('/student/:id/download-pdf', async (req, res) => {
+app.get('/download-pdf/:id', async (req, res) => {
   try {
     const browser = await puppeteer.launch();
     const page = await browser.newPage();
@@ -150,4 +166,34 @@ app.post('/find-student', async (req, res) => {
 // Start server
 app.listen(3000, () => {
   console.log('app is listening at port 3000');
+});
+
+//Auntentication reister and login route
+app.post('/register', async (req, res) => {
+  const { email, password } = req.body;
+
+  const existing = await Admin.findOne({ email });
+  if (existing) return res.status(409).json({ message: 'Admin already exists' });
+
+  const hashedPassword = await bcrypt.hash(password, 10);
+  const newAdmin = new Admin({ email, password: hashedPassword });
+
+  await newAdmin.save();
+  res.status(201).json({ message: 'Admin registered' });
+});
+
+// Login route
+app.post('/login', async (req, res) => {
+  const { email, password } = req.body;
+
+  const admin = await Admin.findOne({ email });
+  if (!admin) return res.status(401).json({ message: 'Invalid credentials' });
+
+  const isMatch = await bcrypt.compare(password, admin.password);
+  if (!isMatch) return res.status(401).json({ message: 'Invalid credentials' });
+
+  const token = jwt.sign({ adminId: admin._id }, 'secret_key', { expiresIn: '1h' });
+
+  res.status(200).json({ token });
+  
 });
