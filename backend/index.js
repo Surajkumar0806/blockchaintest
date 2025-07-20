@@ -183,14 +183,35 @@ app.post('/register', async (req, res) => {
 });
 
 // Login route
+const loginAttempts = {};
 app.post('/login', async (req, res) => {
   const { email, password } = req.body;
 
+  // Initialize if not exists
+  if (!loginAttempts[email]) {
+    loginAttempts[email] = { count: 0, lastAttempt: Date.now() };
+  }
+
+  // Check if attempts exceeded
+  if (loginAttempts[email].count >= 3) {
+    // console.log("too many attempts");
+    return res.status(429).json({ message: 'Too many failed attempts. Try again later.' });
+  }
+
   const admin = await Admin.findOne({ email });
-  if (!admin) return res.status(401).json({ message: 'Invalid credentials' });
+  if (!admin){
+    loginAttempts[email].count += 1;
+    return res.status(401).json({ message: 'Invalid credentials' });
+  } 
 
   const isMatch = await bcrypt.compare(password, admin.password);
-  if (!isMatch) return res.status(401).json({ message: 'Invalid credentials' });
+  if (!isMatch){
+    loginAttempts[email].count += 1;
+    return res.status(401).json({ message: 'Invalid credentials' });
+  } 
+
+   // ✅ Success: reset counter
+  loginAttempts[email].count = 0;
 
   const token = jwt.sign({ adminId: admin._id }, 'secret_key', { expiresIn: '1h' });
 

@@ -10,6 +10,7 @@ const LoginPage = () => {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const [errorMessage, setErrorMessage] = useState('');
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -33,10 +34,18 @@ const LoginPage = () => {
       setTimeout(() => {
         navigate('/admin');
       }, 1000);
-    } catch (err) {
-      toast.error("Invalid credentials ❌");
-    } finally {
-      setLoading(false);
+    }  catch (error) {
+        if (error.response?.status === 401) {
+        toast.error("Invalid credentials");
+        setErrorMessage("Invalid email or password.");
+        setLoading(false);
+        } else if (error.response?.status === 429) {
+        toast.error("Too many failed attempts. Try again later");
+        setErrorMessage("Too many failed login attempts. Please try again later.");
+        } else {
+        toast.error("Login failed. Please try again.");
+        setErrorMessage("Something went wrong. Please try again.");
+        }
     }
   };
 
@@ -57,6 +66,11 @@ const LoginPage = () => {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           /><br />
+          {errorMessage && (
+          <div style={{ color: 'red', marginBottom: '10px' }}>
+          {errorMessage}
+          </div>
+          )}
           <button type="submit" disabled={loading}>
             {loading ? 'Logging in...' : 'Login'}
           </button>
