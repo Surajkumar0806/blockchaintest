@@ -17,6 +17,7 @@ const jwt = require('jsonwebtoken');
 app.use(cors());
 app.use(express.json());
 
+
 // EJS setup
 app.set('view engine', 'ejs');
 app.set('views', './views');
@@ -31,7 +32,7 @@ mongoose.connect('mongodb://localhost:27017/studentResults')
   });
 
 // Model import
-const Result = require('./models/Result');
+const Result = require('./models/result.js');
 
 const verifyToken = (req, res, next) => {
   const token = req.headers.authorization?.split(" ")[1];
@@ -59,7 +60,8 @@ app.post('/submit-result',verifyToken, async (req, res) => {
       });
     }
 
-    const student = new Result({ studentName, rollNo, semester, subjects });
+    const student = new Result(req.body);
+    
 
     // Render EJS to HTML
     const html = await ejs.renderFile(path.join(__dirname, 'views', 'result.ejs'), {
@@ -80,6 +82,7 @@ app.post('/submit-result',verifyToken, async (req, res) => {
     student.pdfHash = pdfHash;
 
     await student.save();
+    console.log(student);
 
     // Save PDF locally
     const filePath = path.join(__dirname, `results/result-${student._id}.pdf`);

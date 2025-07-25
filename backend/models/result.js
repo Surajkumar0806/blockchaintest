@@ -1,19 +1,22 @@
 const mongoose = require('mongoose');
 
+
 const ResultSchema = new mongoose.Schema({
   studentName: String,
   rollNo: String,
   semester: Number,
+  photo: String,
+ 
   subjects: [
     {
+      code: String,
       name: String,
-      marks: Number
+      internalMarks: Number,
+      externalMarks: Number,
     }
   ],
-  pdfHash: String
-
+  
 });
 
-module.exports = mongoose.model('Result', ResultSchema);
-
-
+const Result = mongoose.model('Result', ResultSchema);
+module.exports = Result;
