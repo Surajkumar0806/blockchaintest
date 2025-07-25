@@ -52,6 +52,7 @@ app.post('/submit-result',verifyToken, async (req, res) => {
     const studentName = req.body.studentName.trim();
     const semester = parseInt(req.body.semester);
     const subjects = req.body.subjects;
+    const photo = req.body.photo;
 
     const existing = await Result.findOne({ rollNo, semester });
     if (existing) {
@@ -60,7 +61,7 @@ app.post('/submit-result',verifyToken, async (req, res) => {
       });
     }
 
-    const student = new Result(req.body);
+    const student = new Result({rollNo,studentName,semester,subjects,photo});
     
 
     // Render EJS to HTML
@@ -82,7 +83,7 @@ app.post('/submit-result',verifyToken, async (req, res) => {
     student.pdfHash = pdfHash;
 
     await student.save();
-    console.log(student);
+    
 
     // Save PDF locally
     const filePath = path.join(__dirname, `results/result-${student._id}.pdf`);
