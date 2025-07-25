@@ -114,7 +114,8 @@ const AdminPage = () => {
         studentName: '',
         rollNo: '',
         semester: '',
-        subjects: [{ name: '', marks: '' }]
+        photo:'',
+        subjects: [{ name: '', code:'',internalMarks:'',externalMarks:'' }]
       });
       setErrors({});
     } catch (error) {
@@ -186,10 +187,19 @@ const AdminPage = () => {
           />
           {errors.semester && <p style={{ color: 'red' }}>{errors.semester}</p>}
 
+          <input name="photo" placeholder="Photo URL" value={formData.photo} onChange={handleChange} />
           <h4>Subjects</h4>
           <div className="subject-group">
             {formData.subjects.map((subject, index) => (
               <div key={index} style={{ flex: '1 1 45%' }}>
+                <input 
+                  type='text'
+                 name="code"
+                 placeholder="Subject Code"
+                  value={subject.code} 
+                  onChange={(e) => handleChange(e, index)} 
+                  />
+
                 <input
                   type="text"
                   name="name"
@@ -200,16 +210,11 @@ const AdminPage = () => {
                 {errors[`subjectName-${index}`] && (
                   <p style={{ color: "red" }}>{errors[`subjectName-${index}`]}</p>
                 )}
-                <input
-                  type="number"
-                  name="marks"
-                  placeholder="Marks"
-                  value={subject.marks}
-                  onChange={(e) => handleChange(e, index)}
-                />
-                {errors[`subjectMarks-${index}`] && (
-                  <p style={{ color: "red" }}>{errors[`subjectMarks-${index}`]}</p>
-                )}
+                 <input type='number'
+                  name="internalMarks"
+                   placeholder="Internal Marks" value={subject.internalMarks} onChange={(e) => handleChange(e, index)} />
+                  <input type='number' name="externalMarks" placeholder="External Marks" value={subject.externalMarks} onChange={(e) => handleChange(e, index)} />
+                  
               </div>
             ))}
           </div>
