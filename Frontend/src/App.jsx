@@ -4,6 +4,7 @@ import AdminPage from './pages/AdminPage';
 import CheckResult from './pages/CheckResult';
 import ViewResult from './pages/ViewResult';
 import LoginPage from './pages/LoginPage';
+import LandingPage from './pages/Landingpage';
 
 function App() {
   return (
@@ -11,6 +12,7 @@ function App() {
       
       <Router>
       <Routes>
+        <Route path="/" element={<LandingPage />} />
         <Route path="/admin" element={<AdminPage />} />
         <Route path="/check-result" element={<CheckResult />} />
         <Route path="/result/:id" element={<ViewResult />} />

@@ -78,11 +78,13 @@ app.post('/submit-result',verifyToken, async (req, res) => {
     const pdfBuffer = await page.pdf({ format: 'A4', printBackground: true });
     await browser.close();
 
+
+     
     // Generate PDF hash
     const pdfHash = sha256(pdfBuffer);
     student.pdfHash = pdfHash;
 
-    await student.save();
+   await student.save();
     
 
     // Save PDF locally

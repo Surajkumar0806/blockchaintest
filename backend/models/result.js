@@ -15,7 +15,7 @@ const ResultSchema = new mongoose.Schema({
       externalMarks: Number,
     }
   ],
-  
+  pdfHash : String,
 });
 
 const Result = mongoose.model('Result', ResultSchema);
