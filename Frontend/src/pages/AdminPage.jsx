@@ -107,6 +107,8 @@ const AdminPage = () => {
         headers: { Authorization: `Bearer ${token}` }
       });
       toast.success('Result submitted successfully!');
+      
+      // Reset form
       setFormData({
         studentName: '',
         rollNo: '',
@@ -115,6 +117,12 @@ const AdminPage = () => {
         subjects: [{ code: '', name: '', internalMarks: '', externalMarks: '' }]
       });
       setErrors({});
+
+      // ✅ Redirect to landing page after success
+      setTimeout(() => {
+        navigate("/");
+      }, 1500);
+
     } catch (error) {
       toast.error('Result exists for a same Roll no');
       console.error("Submission error:", error);
@@ -184,7 +192,7 @@ const AdminPage = () => {
             </div>
 
             <button type="button" onClick={addSubject}>+ Add Subject</button><br /><br />
-            <button type="submit" disabled={ isSubmitting}>
+            <button type="submit" disabled={isSubmitting}>
               {isSubmitting ? 'Submitting...' : 'Submit Result'}
             </button>
           </form>
@@ -196,4 +204,3 @@ const AdminPage = () => {
 };
 
 export default AdminPage;
-

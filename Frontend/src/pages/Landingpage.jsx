@@ -29,14 +29,11 @@ const LandingPage = () => {
             <a href="#about">About</a>
             <a href="#admin">Admin</a>
             <a href="#result">Results</a>
-          
           </nav>
 
           <button className="mobile-menu-btn">
             <i className="fas fa-bars"></i>
           </button>
-
-          
         </div>
       </header>
 
@@ -46,10 +43,6 @@ const LandingPage = () => {
           <div className="hero-content ">
             <div className="hero-left">
               <h1 className="hero-welcome">Welcome.</h1>
-
-              
-
-              
             </div>
 
             <div className="hero-right">
@@ -75,11 +68,9 @@ const LandingPage = () => {
       </section>
 
       {/* Quick Access Cards */}
-      <section className="quick-access" id="admin" >
+      <section className="quick-access" id="admin">
         <div className="container">
-          <div className="quick-access " >
-            
-            
+          <div className="quick-access ">
             <div
               className="access-card"
               onClick={() => navigateTo("admin")}
@@ -95,11 +86,10 @@ const LandingPage = () => {
                 Access <i className="fas fa-arrow-right"></i>
               </span>
             </div>
-            
+
             <div
               className="access-card"
               onClick={() => navigateTo("results")}
-              
             >
               <div className="card-icon purple">
                 <i className="fas fa-file-alt"></i>
@@ -150,8 +140,6 @@ const LandingPage = () => {
               </div>
               <span>TECHUNIVERSITY</span>
             </div>
-
-            
 
             <div className="footer-bottom">
               <p>
