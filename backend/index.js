@@ -1,3 +1,4 @@
+//ORIGINAL
 const express = require("express");
 const app = express();
 const mongoose = require('mongoose');
@@ -18,6 +19,72 @@ app.use(cors());
 app.use(express.json());
 
 
+// ========== Blockchain Integration Start ==========
+
+const { ethers } = require("ethers");
+
+// Get values from .env file
+const contractAddress = process.env.CONTRACT_ADDRESS;
+const privateKey = process.env.PRIVATE_KEY;
+const rpcUrl = process.env.SEPOLIA_RPC_URL;
+
+// Parse ABI from environment variable
+let contractABI;
+try {
+  contractABI = JSON.parse(process.env.CONTRACT_ABI);
+  console.log("✅ Contract ABI loaded successfully");
+} catch (error) {
+  console.error("❌ Error parsing CONTRACT_ABI:", error.message);
+  process.exit(1);
+}
+
+// Validation
+if (!contractAddress || !privateKey || !rpcUrl || !contractABI) {
+  console.error("❌ Missing required environment variables");
+  process.exit(1);
+}
+
+console.log("🔧 Blockchain Configuration:");
+console.log("Contract Address:", contractAddress);
+console.log("RPC URL:", rpcUrl);
+console.log("Chain ID: 11155111 (Sepolia)");
+
+// Connect to Sepolia testnet
+const provider = new ethers.JsonRpcProvider(rpcUrl);
+const wallet = new ethers.Wallet(privateKey, provider);
+const blockchainContract = new ethers.Contract(contractAddress, contractABI, wallet);
+
+// Helper function to save hash on blockchain
+async function saveHashOnBlockchain(studentID, pdfHash) {
+  try {
+    console.log(`🔄 Storing hash on Sepolia blockchain for student: ${studentID}`);
+    
+    const tx = await blockchainContract.addOrUpdateResult(studentID, pdfHash);
+    console.log(`⏳ Transaction sent: ${tx.hash}`);
+    console.log(`🔗 View on Explorer: https://sepolia.etherscan.io/tx/${tx.hash}`);
+    
+    const receipt = await tx.wait();
+    console.log(`✅ Hash stored on blockchain! Block: ${receipt.blockNumber}`);
+    
+    return {
+      success: true,
+      transactionHash: tx.hash,
+      blockNumber: receipt.blockNumber
+    };
+    
+  } catch (err) {
+    console.error("❌ Blockchain error:", err.message);
+    return {
+      success: false,
+      error: err.message
+    };
+  }
+}
+
+
+// ========== Blockchain Integration End ==========
+
+
 // EJS setup
 app.set('view engine', 'ejs');
 app.set('views', './views');
@@ -32,13 +99,14 @@ mongoose.connect('mongodb://localhost:27017/studentResults')
   });
 
 // Model import
-const Result = require('./models/result.js');
-
+const Result = require('./models/Result');
+//(suraj) added to check the actual blockchain integration debug code
 const verifyToken = (req, res, next) => {
+  console.log("🔐 Auth header received:", req.headers.authorization); // ADD THIS LINE
   const token = req.headers.authorization?.split(" ")[1];
   if (!token) return res.status(401).json({ message: 'Unauthorized' });
-
-  jwt.verify(token, 'secret_key', (err, decoded) => {
+  
+  jwt.verify(token, process.env.JWT_SECRET || 'secret_key', (err, decoded) => {
     if (err) return res.status(403).json({ message: 'Invalid token' });
     req.adminId = decoded.adminId;
     next();
@@ -47,12 +115,17 @@ const verifyToken = (req, res, next) => {
 
 // Submit result and generate PDF
 app.post('/submit-result',verifyToken, async (req, res) => {
+	console.log("🚀 SUBMIT-RESULT ENDPOINT HIT!"); // ADD THIS LINE
+	console.log("📝 Request body:", req.body); // ADD THIS LINE (suraj: to test abc debugcode)
   try {
     const rollNo = req.body.rollNo.trim().toUpperCase();
     const studentName = req.body.studentName.trim();
     const semester = parseInt(req.body.semester);
     const subjects = req.body.subjects;
     const photo = req.body.photo;
+
+    console.log("✅ Step 2: Data extracted successfully"); // ADD THIS debugcode
+
 
     const existing = await Result.findOne({ rollNo, semester });
     if (existing) {
@@ -61,7 +134,13 @@ app.post('/submit-result',verifyToken, async (req, res) => {
       });
     }
 
+    console.log("✅ Step 3: No existing result found"); // ADD THIS debugcode
+
+
     const student = new Result({rollNo,studentName,semester,subjects,photo});
+
+
+        console.log("✅ Step 4: About to render EJS template..."); // ADD THIS debugcode
     
 
     // Render EJS to HTML
@@ -69,6 +148,7 @@ app.post('/submit-result',verifyToken, async (req, res) => {
       student,
       universityName: 'Your University Name'
     });
+   console.log("✅ Step 5: EJS rendered successfully, launching Puppeteer..."); // ADD THIS dbc
 
     // Generate PDF
     const browser = await puppeteer.launch();
@@ -77,15 +157,22 @@ app.post('/submit-result',verifyToken, async (req, res) => {
     await page.setContent(html, { waitUntil: 'networkidle0' });
     const pdfBuffer = await page.pdf({ format: 'A4', printBackground: true });
     await browser.close();
-
+console.log("✅ Step 6: PDF generated successfully, creating hash..."); // ADD THIS dbc
 
      
-    // Generate PDF hash
+    // Generate PDF hashnode 
     const pdfHash = sha256(pdfBuffer);
     student.pdfHash = pdfHash;
 
+    console.log("✅ Step 7: Hash created, saving to database..."); // ADD THIS dbc
+
    await student.save();
     
+    console.log("✅ Step 8: Saved to database, NOW CALLING BLOCKCHAIN..."); // ADD THIS dbc
+
+    await saveHashOnBlockchain(rollNo, pdfHash); // This should show your blockchain messages dbc
+    
+    console.log("✅ Step 9: Blockchain call completed"); // ADD THIS dbc
 
     // Save PDF locally
     const filePath = path.join(__dirname, `results/result-${student._id}.pdf`);
