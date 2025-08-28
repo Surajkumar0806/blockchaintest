@@ -29,13 +29,15 @@ const contractAddress = process.env.CONTRACT_ADDRESS;
 const privateKey = process.env.PRIVATE_KEY;
 const rpcUrl = process.env.SEPOLIA_RPC_URL;
 
-// Parse ABI from environment variable
 let contractABI;
 try {
-  contractABI = JSON.parse(process.env.CONTRACT_ABI);
-  console.log("✅ Contract ABI loaded successfully");
+  // Read and parse the ABI JSON file
+  const abiPath = path.join(__dirname, 'contractABI.json'); // Adjust path if needed
+  const abiFile = fs.readFileSync(abiPath, 'utf8');
+  contractABI = JSON.parse(abiFile);
+  console.log("✅ Contract ABI loaded successfully from file");
 } catch (error) {
-  console.error("❌ Error parsing CONTRACT_ABI:", error.message);
+  console.error("❌ Error loading contractABI.json:", error.message);
   process.exit(1);
 }
 
