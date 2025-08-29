@@ -33,12 +33,12 @@ jobs:
 
       - name: Install dependencies
         run: |
-          cd frontend
+          cd Frontend
           npm install
 
       - name: Build Vite app
         run: |
-          cd frontend
+          cd Frontend
           npm run build
 
       - name: Setup Pages
@@ -47,7 +47,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: './frontend/dist'
+          path: './Frontend/dist'
 
       - name: Deploy to GitHub Pages
         id: deployment
