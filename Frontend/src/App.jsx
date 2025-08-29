@@ -10,7 +10,7 @@ function App() {
   return (
     
       
-      <Router>
+      <Router basename="/blockchaintest">
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/admin" element={<AdminPage />} />
